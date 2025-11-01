@@ -4,7 +4,11 @@ import { Chat } from "./Chat";
 import "./App.css";
 
 function App() {
-  return <Chat />;
+  return (
+    <div className="app">
+      <Chat />
+    </div>
+  );
 }
 
 export default App;
