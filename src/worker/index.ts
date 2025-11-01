@@ -3,6 +3,17 @@ import { Hono } from "hono";
 // Define the environment bindings
 interface Env {
 	CHAT_HISTORY: KVNamespace;
+	AI: {
+		run: (
+			model: string,
+			input: {
+				messages: Array<{
+					role: "system" | "user" | "assistant";
+					content: string;
+				}>;
+			}
+		) => Promise<{ response: string }>;
+	};
 }
 
 // Message type for conversation history
@@ -13,11 +24,28 @@ interface Message {
 
 const app = new Hono<{ Bindings: Env }>();
 
-// Placeholder LLM function - will be replaced with real Workers AI later
+// Call Cloudflare Workers AI (Llama 3.3 instruct model)
 async function generateAssistantReply(prompt: string, env: Env): Promise<string> {
-	// This is a placeholder. Will be replaced with Llama 3.3 call later.
-	return "This is a placeholder AI response based on: " + prompt.slice(0, 200);
+	const result = await env.AI.run(
+		"@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+		{
+			messages: [
+				{
+					role: "system",
+					content:
+						"You are AskMyCampus, a helpful campus assistant for the University of Calgary. Be direct, friendly, and concise. Answer like a student peer, not a corporate chatbot. Make sure you give relevant University of Calgary information only"
+				},
+				{
+					role: "user",
+					content: prompt
+				}
+			]
+		}
+	);
+
+	return result.response;
 }
+
 
 // Helper function to build prompt from message history
 function buildPrompt(messages: Message[]): string {
