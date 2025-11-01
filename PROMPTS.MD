@@ -231,3 +231,28 @@ The implementation:
 - Maintains conversation context per sessionId in KV
 - Ready for local testing with `wrangler dev` or `npm run dev`
 - Placeholder LLM function is ready to be replaced with real Workers AI (Llama 3.3) call in the next step
+
+---
+
+## Prompt 3: README Documentation
+
+**Date:** 2025-11-01
+
+### Original Prompt:
+
+Create a concise README.md for this repo (`cf_ai_askmycampus`).
+
+Include:
+
+- A short intro explaining this is an AI-powered chat assistant built on Cloudflare (Workers AI + KV + Pages) for the Cloudflare internship assignment.
+
+- A section explaining how it meets the 4 requirements (LLM, workflow, user input via chat, memory).
+
+- A "Run Locally" section with exact commands:
+
+  ```bash
+  npm install -g wrangler
+  wrangler login
+  npm install
+  npx wrangler dev (needs npm run build)
+  ```

@@ -1,90 +1,219 @@
-# React + Vite + Hono + Cloudflare Workers
+# AskMyCampus - AI Campus Assistant
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/cloudflare/templates/tree/main/vite-react-template)
+An AI-powered chat assistant built on Cloudflare's edge platform for the **Cloudflare Internship Assignment**. AskMyCampus helps University of Calgary students get instant answers to campus-related questions using natural conversation.
 
-This template provides a minimal setup for building a React application with TypeScript and Vite, designed to run on Cloudflare Workers. It features hot module replacement, ESLint integration, and the flexibility of Workers deployments.
+## 🏗️ Architecture
 
-![React + TypeScript + Vite + Cloudflare Workers](https://imagedelivery.net/wSMYJvS3Xw-n339CbDyDIA/fc7b4b62-442b-4769-641b-ad4422d74300/public)
+Built entirely on Cloudflare's platform:
 
-<!-- dash-content-start -->
+- **Frontend**: React + Vite (served via Cloudflare Pages)
+- **Backend**: Cloudflare Workers (Hono framework)
+- **AI**: Workers AI (Llama 3.3 70B Instruct)
+- **Storage**: KV Namespace (conversation memory)
+- **Language**: TypeScript
 
-🚀 Supercharge your web development with this powerful stack:
+## ✅ Assignment Requirements
 
-- [**React**](https://react.dev/) - A modern UI library for building interactive interfaces
-- [**Vite**](https://vite.dev/) - Lightning-fast build tooling and development server
-- [**Hono**](https://hono.dev/) - Ultralight, modern backend framework
-- [**Cloudflare Workers**](https://developers.cloudflare.com/workers/) - Edge computing platform for global deployment
+This project fulfills all four required components:
 
-### ✨ Key Features
+### 1. **LLM Integration**
 
-- 🔥 Hot Module Replacement (HMR) for rapid development
-- 📦 TypeScript support out of the box
-- 🛠️ ESLint configuration included
-- ⚡ Zero-config deployment to Cloudflare's global network
-- 🎯 API routes with Hono's elegant routing
-- 🔄 Full-stack development setup
-- 🔎 Built-in Observability to monitor your Worker
+- Uses **Cloudflare Workers AI** with the `@cf/meta/llama-3.3-70b-instruct-fp8-fast` model
+- System prompt configures the AI as a University of Calgary campus assistant
+- Responses are direct, friendly, and student-focused
 
-Get started in minutes with local development or deploy directly via the Cloudflare dashboard. Perfect for building modern, performant web applications at the edge.
+### 2. **Multi-Step Workflow**
 
-<!-- dash-content-end -->
+- **User Input** → Parse & validate (Worker)
+- **Memory Retrieval** → Load conversation history from KV by sessionId
+- **Context Building** → Format chat history into prompt
+- **AI Inference** → Call Workers AI with full conversation context
+- **Persistence** → Save updated conversation to KV
+- **Response** → Return AI reply to frontend
 
-## Getting Started
+### 3. **User Input via Chat Interface**
 
-To start a new project with this template, run:
+- Clean, responsive React chat UI
+- Real-time message display with user/assistant distinction
+- Persistent session management via localStorage
+- Auto-scrolling, loading states, and error handling
+- Enter key support for quick messaging
+
+### 4. **Conversation Memory**
+
+- Each user gets a unique `sessionId` (UUID) stored in localStorage
+- Full conversation history persisted in **Cloudflare KV**
+- Messages stored as JSON array: `{ role: "user" | "assistant", content: string }[]`
+- Context maintained across page reloads and multiple conversations
+- Each request loads history, adds new messages, and saves back to KV
+
+## 🚀 Run Locally
+
+### Prerequisites
 
 ```bash
-npm create cloudflare@latest -- --template=cloudflare/templates/vite-react-template
+npm install -g wrangler
+wrangler login
 ```
 
-A live deployment of this template is available at:
-[https://react-vite-template.templates.workers.dev](https://react-vite-template.templates.workers.dev)
-
-## Development
-
-Install dependencies:
+### Setup & Development
 
 ```bash
+# Install dependencies
 npm install
-```
 
-Start the development server with:
-
-```bash
+# Run development server (recommended)
 npm run dev
 ```
 
-Your application will be available at [http://localhost:5173](http://localhost:5173).
+This starts the integrated dev environment with:
 
-## Production
+- React frontend with hot reload (Vite)
+- Worker backend with KV and AI bindings
+- Automatic routing between frontend/backend
 
-Build your project for production:
+The app will be available at `http://localhost:5173`
+
+
+Or test the Worker directly:
+
+```bash
+# Build frontend first
+npm run build
+
+# Run Worker with wrangler
+npx wrangler dev
+```
+
+## 📁 Project Structure
+
+```
+cf_ai_askmycampus/
+├── src/
+│   ├── react-app/          # Frontend React application
+│   │   ├── Chat.tsx         # Main chat component
+│   │   ├── Chat.css         # Chat UI styles
+│   │   └── App.tsx          # Root component
+│   └── worker/
+│       └── index.ts         # Worker API (POST /api/chat)
+├── wrangler.json            # Cloudflare Worker configuration
+└── PROMPTS.MD               # Development log with prompts
+```
+
+## 🔌 API Endpoints
+
+### POST `/api/chat`
+
+Chat with the AI assistant.
+
+**Request:**
+
+```json
+{
+  "sessionId": "uuid-v4-string",
+  "message": "What time does the library close?"
+}
+```
+
+**Response:**
+
+```json
+{
+  "reply": "The Taylor Family Digital Library is typically open..."
+}
+```
+
+**Error Responses:**
+
+- `400` - Missing required fields (sessionId or message)
+- `500` - Internal server error
+
+## 🎯 Key Features
+
+- ✅ **Serverless & Edge-Native**: Runs entirely on Cloudflare's global network
+- ✅ **Persistent Sessions**: Conversation history maintained across reloads
+- ✅ **Context-Aware AI**: Full conversation context sent with each request
+- ✅ **Clean UI**: Modern, responsive chat interface
+- ✅ **Error Handling**: Graceful fallbacks for network/API errors
+- ✅ **TypeScript**: Fully typed for safety and maintainability
+
+## 🧪 Testing the Chat
+
+1. Start the dev server: `npm run dev`
+2. Open `http://localhost:5173`
+3. Type a message like "Tell me about the University of Calgary"
+4. The AI will respond with campus-specific information
+5. Refresh the page - your conversation persists!
+6. Open DevTools → Application → Local Storage to see your `sessionId`
+
+## 📦 Deployment
+
+Deploy to Cloudflare Workers:
 
 ```bash
 npm run build
+npm run deploy
 ```
 
-Preview your build locally:
+This will:
+
+1. Build the React frontend
+2. Deploy the Worker with AI and KV bindings
+3. Serve the SPA from Worker assets
+
+**Note**: You'll need to create a production KV namespace and update `wrangler.json`:
 
 ```bash
-npm run preview
+wrangler kv:namespace create "CHAT_HISTORY"
+# Update wrangler.json with the returned namespace ID
 ```
 
-Deploy your project to Cloudflare Workers:
+## 🔧 Configuration
 
-```bash
-npm run build && npm run deploy
+### Worker Bindings
+
+Configured in `wrangler.json`:
+
+```json
+{
+  "kv_namespaces": [
+    {
+      "binding": "CHAT_HISTORY",
+      "id": "CHAT_HISTORY_DEV"
+    }
+  ],
+  "ai": {
+    "binding": "AI"
+  }
+}
 ```
 
-Monitor your workers:
+### AI Model
 
-```bash
-npx wrangler tail
-```
+Using **Llama 3.3 70B Instruct (FP8 Fast)** - optimized for speed and quality.
 
-## Additional Resources
+Model ID: `@cf/meta/llama-3.3-70b-instruct-fp8-fast`
 
-- [Cloudflare Workers Documentation](https://developers.cloudflare.com/workers/)
-- [Vite Documentation](https://vitejs.dev/guide/)
-- [React Documentation](https://reactjs.org/)
-- [Hono Documentation](https://hono.dev/)
+## 📝 Development Log
+
+See [PROMPTS.MD](./PROMPTS.MD) for detailed development prompts and implementation summaries.
+
+## 🛠️ Tech Stack
+
+| Component | Technology             |
+| --------- | ---------------------- |
+| Runtime   | Cloudflare Workers     |
+| Framework | Hono                   |
+| Frontend  | React 19 + Vite 6      |
+| AI        | Workers AI (Llama 3.3) |
+| Storage   | KV Namespace           |
+| Language  | TypeScript             |
+| Styling   | Vanilla CSS            |
+
+## 📄 License
+
+See [LICENSE](./LICENSE) file for details.
+
+---
+
+**Built with ☁️ on Cloudflare's Edge Platform**
