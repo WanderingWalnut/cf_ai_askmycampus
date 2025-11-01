@@ -25,6 +25,20 @@
 	 * https://developers.cloudflare.com/workers/runtime-apis/bindings/
 	 */
 	/**
+	 * KV Namespace for chat history storage
+	 * https://developers.cloudflare.com/kv/
+	 */
+	"kv_namespaces": [
+		{
+			"binding": "CHAT_HISTORY",
+			"id": "CHAT_HISTORY_DEV"
+		}
+	],
+
+	"ai": {
+		"binding": "AI"
+	  },
+	/**
 	 * Environment Variables
 	 * https://developers.cloudflare.com/workers/wrangler/configuration/#environment-variables
 	 */
